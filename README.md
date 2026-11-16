@@ -4,6 +4,8 @@ This is just a demo for the [MetaInspector](https://github.com/jaimeiniesta/meta
 
 ## Setup
 
+Requires Ruby 3.3 or newer.
+
 ```
 bundle install
 ```
