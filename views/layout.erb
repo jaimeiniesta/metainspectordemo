@@ -1,60 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
     <title>MetaInspector Demo</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Demo for MetaInspector gem">
-    <meta name="author" content="ruby, scraping, gem">
-
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.4/styles/vs.min.css">
-    <link href="/css/bootstrap.css" rel="stylesheet">
-    <style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Explore a web page's metadata, images, links and more with the MetaInspector Ruby gem.">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/daisyui.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+      @theme inline {
+        --color-base-100: #ffffff;
+        --color-base-200: #f1f5f9;
+        --color-base-300: #b0bdcf;
+        --color-base-content: #0f172a;
+        --color-muted: #334155;
+        --color-primary: #1d4ed8;
+        --color-primary-content: #ffffff;
+      }
+      @layer base {
+        html { scroll-padding-top: 2rem; }
+        body { color: #0f172a; background: #f1f5f9; }
+        :focus-visible { outline: 2px solid #1d4ed8; outline-offset: 4px; }
+        ::selection { background: #dbeafe; }
       }
     </style>
-    <link href="/css/bootstrap-responsive.css" rel="stylesheet">
-
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <style>
+      [data-theme="light"] { --color-primary: #1d4ed8; --color-primary-content: #ffffff; --color-base-100: #ffffff; --color-base-200: #f1f5f9; --color-base-300: #b0bdcf; --color-base-content: #0f172a; }
+    </style>
+    <script src="/js/demo.js" defer></script>
   </head>
-
-  <body>
-
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="/">MetaInspector Demo</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li><a href="https://github.com/jaimeiniesta/metainspectordemo">Fork me!</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
+  <body class="min-h-dvh font-sans text-lg leading-relaxed antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-base-100 focus:p-4">Skip to content</a>
+    <header class="border-b border-base-300 bg-base-100">
+      <div class="mx-auto flex min-h-20 max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
+        <a href="/" class="flex items-baseline gap-2 font-semibold tracking-tight">
+          <span class="text-xl">MetaInspector</span><span class="text-lg font-normal text-muted">Demo</span>
+        </a>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-x-5 gap-y-2 text-lg text-muted">
+          <a href="https://github.com/jaimeiniesta/metainspector#readme" class="hover:underline underline-offset-4">Documentation <span aria-hidden="true">↗</span></a>
+          <a href="https://github.com/jaimeiniesta/metainspectordemo" class="hover:underline underline-offset-4">Fork me! <span aria-hidden="true">↗</span></a>
+        </nav>
       </div>
-    </div>
-
-    <div class="container">
-
+    </header>
+    <main id="main" class="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
       <%= yield %>
-
-      <hr>
-
-      <footer>
-        <p>&copy; <a href="https://github.com/jaimeiniesta">Jaime Iniesta</a> 2012</p>
-      </footer>
-
-    </div> <!-- /container -->
-
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js" type="text/javascript"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/7.4/highlight.min.js" type="text/javascript"></script>
-    <script type="text/javascript">
-      // Initializes syntax highlighting
-      hljs.initHighlightingOnLoad();
-    </script>
+    </main>
+    <footer class="border-t border-base-300 bg-base-100">
+      <div class="mx-auto flex max-w-6xl flex-wrap justify-between gap-3 px-5 py-7 text-lg text-muted sm:px-8">
+        <p>A little demo of the <a href="https://github.com/jaimeiniesta/metainspector" class="underline underline-offset-4">MetaInspector Ruby gem</a>.</p>
+        <p><a href="https://github.com/jaimeiniesta" class="hover:underline underline-offset-4">Jaime Iniesta</a> <span aria-hidden="true">·</span> MetaInspector <%= h MetaInspector::VERSION %></p>
+      </div>
+    </footer>
   </body>
 </html>

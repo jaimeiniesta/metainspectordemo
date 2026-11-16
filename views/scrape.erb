@@ -1,67 +1,217 @@
-<div class="hero-unit">
-  <h1>MetaInspector results for:</h1>
-  <h2 style="margin-bottom:6px;"><%= @page.url %></h2>
+<div class="pb-7 pt-10 sm:pt-12">
+  <a href="/" class="text-lg text-muted hover:underline underline-offset-4">← Back to the demo</a>
+  <h1 class="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">Your page, unpacked.</h1>
+  <p class="mt-3 text-lg text-muted [overflow-wrap:anywhere]"><%= external_link(@page.url) %></p>
+</div>
+<%= erb :_form, layout: false %>
+
+<div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+  <% [['Images', @page.images.size, 'images'], ['Links', @page.links.all.size, 'links'], ['Headings', (1..6).sum { |level| @page.public_send("h#{level}").size }, 'headings'], ['Meta tags', @page.meta_tags.values.sum { |group| group.is_a?(Hash) ? group.values.sum(&:size) : group.compact.size }, 'data']].each do |label, count, anchor| %>
+    <a href="#<%= anchor %>" class="rounded-xl border border-base-300 bg-base-100 px-5 py-4 hover:border-base-content/40">
+      <span class="block text-2xl font-semibold tabular-nums tracking-tight"><%= count %></span>
+      <span class="mt-1 block text-lg text-muted"><%= label %></span>
+    </a>
+  <% end %>
 </div>
 
-<div class="row">
-  <div class="span14 offset1">
-    <%= show_if_present 'Title',        @page.best_title %>
-
-    <%= show_if_present 'Description',  @page.best_description %>
-    <%= show_if_present 'Keywords',     @page.meta['keywords'] %>
-    <%= show_if_present 'Author',       @page.best_author %>
-    <%= show_if_present 'Charset',      @page.charset %>
-    <%= link_if_present 'URL',          @page.url %>
-    <%= show_if_present 'Scheme',       @page.scheme %>
-    <%= show_if_present 'Host',         @page.host %>
-    <%= link_if_present 'Root URL',     @page.root_url %>
-    
-    <% if @page.feeds.any? %>
-      <%= link_if_present 'Feed URL',     @page.feeds.first[:href] %>
-    <% end %>
-
-    <%= show_if_present 'Meta robots',    @page.meta['robots'] %>
-    <%= show_if_present 'Meta generator', @page.meta['generator'] %>
-
-    <% if @page.images.any? %>
-      <h3>Images</h3>
-
-      <% if @page.images.owner_suggested %>
-        <h4>Suggested by owner (OG / Twitter tags)</h4>
-        <%= paint_images [@page.images.owner_suggested] %>
-        <hr />
+<div class="mt-10 grid items-start gap-8 lg:grid-cols-[11rem_minmax(0,1fr)] lg:gap-10">
+  <nav aria-label="Result sections" class="lg:sticky lg:top-8">
+    <p class="mb-3 text-lg font-semibold">Explore results</p>
+    <div class="flex flex-wrap gap-x-4 gap-y-2 text-lg text-muted lg:flex-col lg:gap-1">
+      <% [['overview', 'Overview'], ['social', 'Social preview'], ['images', 'Images'], ['links', 'Links'], ['headings', 'Headings'], ['feeds', 'Feeds'], ['resources', 'Page resources'], ['iframes', 'Iframes'], ['response', 'URL & HTTP'], ['data', 'Raw data']].each do |id, label| %>
+        <a href="#<%= id %>" class="rounded-md py-2 hover:text-base-content hover:underline underline-offset-4"><%= label %></a>
       <% end %>
+    </div>
+  </nav>
 
-      <% if @page.images.largest %>
-        <h4>Largest image</h4>
-        <%= paint_images [@page.images.largest] %>
-        <hr />
+  <div class="min-w-0 space-y-6">
+    <section id="overview" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Overview', 'The best available text, plus the original fields declared by the page.', 'page.best_title · page.best_description · page.best_author') %>
+      <%= fields([
+        ['Best title', @page.best_title], ['Original title', @page.title],
+        ['Best description', @page.best_description], ['Meta description', @page.description],
+        ['Best author', @page.best_author], ['Meta author', @page.author],
+        ['Language', @page.language], ['Charset', @page.charset],
+        ['Keywords', @page.meta['keywords']], ['Robots', @page.meta['robots']],
+        ['Generator', @page.meta['generator']]
+      ]) %>
+    </section>
+
+    <section id="social" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Social preview', 'A link preview assembled from the best available data. Individual platforms may display it differently.', 'page.images.best · page.meta["og:…"] · page.meta["twitter:…"]') %>
+      <div class="overflow-hidden rounded-xl border border-base-300">
+        <% if web_url?(@best_image) %>
+          <img src="<%= h @best_image %>" alt="Preview image for <%= h @page.best_title || @page.host %>" loading="lazy" referrerpolicy="no-referrer" data-remote-image class="aspect-[1.91/1] w-full bg-base-200 object-contain">
+          <p data-image-fallback hidden class="bg-base-200 p-6 text-lg text-muted">The preview image could not be loaded.</p>
+        <% else %>
+          <p class="bg-base-200 px-5 py-8 text-lg text-muted">No preview image available.</p>
+        <% end %>
+        <div class="p-5">
+          <p class="text-lg text-muted [overflow-wrap:anywhere]"><%= h @page.host %></p>
+          <h3 class="mt-2 text-xl font-semibold [overflow-wrap:anywhere]"><%= h(@page.best_title.to_s.empty? ? 'Untitled page' : @page.best_title) %></h3>
+          <p class="mt-2 text-lg leading-relaxed text-muted [overflow-wrap:anywhere]"><%= h(@page.best_description.to_s.empty? ? 'No description provided.' : @page.best_description) %></p>
+        </div>
+      </div>
+      <% social_tags = @page.meta.select { |key, _| key.start_with?('og:', 'twitter:') } %>
+      <h3 class="mb-4 mt-7 font-semibold">Open Graph & Twitter tags <span class="font-normal text-muted">(<%= social_tags.size %>)</span></h3>
+      <% if social_tags.empty? %>
+        <p class="text-lg text-muted">No Open Graph or Twitter tags found.</p>
+      <% else %>
+        <%= fields(social_tags.map { |key, value| [key, value] }) %>
       <% end %>
+    </section>
 
-      <% if @page.images.best %>
-        <h4>Best image</h4>
-        <%= paint_images [@page.images.best] %>
-        <hr />
+    <section id="images" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Images & favicon', 'Compare MetaInspector’s image choices and browse every discovered image.', 'page.images.owner_suggested · .largest · .best · .with_size · .with_details · .with_metadata · .favicon') %>
+      <p class="mb-6 text-lg leading-relaxed text-muted"><%= params[:image_details] == '1' ? 'Remote lookups are enabled for up to 6 images, including dimensions, file type, file size in bytes and validity. Skipped or unknown details remain null.' : 'Dimensions come from the page markup. Enable “Fetch image details” above for dimensions, file type, file size and validity. The largest choice uses available dimensions.' %></p>
+      <div class="grid gap-4 sm:grid-cols-3">
+        <% [['Suggested by owner', @page.images.owner_suggested], ['Largest image', @largest_image], ['Best image', @best_image]].each do |label, source| %>
+          <%= erb :_image, layout: false, locals: { label: label, source: source, dimensions: nil } %>
+        <% end %>
+      </div>
+      <div class="mt-6"><%= fields([['Favicon', @page.images.favicon, :url]]) %></div>
+      <% if web_url?(@page.images.favicon) %>
+        <img src="<%= h @page.images.favicon %>" alt="Page favicon" loading="lazy" referrerpolicy="no-referrer" class="mt-3 size-10 object-contain">
       <% end %>
+      <h3 class="mb-4 mt-7 font-semibold">All images <span class="font-normal text-muted">(<%= @image_sizes.size %>)</span></h3>
+      <% if @image_sizes.empty? %>
+        <p class="text-lg text-muted">No images found.</p>
+      <% else %>
+        <div class="grid max-h-[36rem] gap-4 overflow-y-auto overscroll-contain pr-1 sm:grid-cols-2">
+          <% @image_sizes.each_with_index do |(source, width, height), index| %>
+            <%= erb :_image, layout: false, locals: { label: "Image #{index + 1}", source: source, dimensions: width.positive? && height.positive? ? "#{width} × #{height}" : 'Dimensions unknown' } %>
+          <% end %>
+        </div>
+      <% end %>
+      <details class="collapse collapse-arrow mt-6 rounded-lg border border-base-300">
+        <summary class="collapse-title text-lg font-semibold">Image details (dimensions, type & file size)</summary>
+        <div class="collapse-content"><%= json_block(@image_details, id: 'image-details') %></div>
+      </details>
+      <details class="collapse collapse-arrow mt-3 rounded-lg border border-base-300">
+        <summary class="collapse-title text-lg font-semibold">Image validity (true, false or not checked)</summary>
+        <div class="collapse-content"><%= json_block(@image_validity, id: 'image-validity') %></div>
+      </details>
+    </section>
 
-      <h4>All images</h4>
-      <%= paint_images @page.images %>
-    <% end %>
+    <section id="links" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Links', 'Unique links resolved to absolute URLs and grouped by destination.', 'page.links.all · .internal · .external · .http · .non_http · .raw') %>
+      <% [['Internal', @page.links.internal], ['External', @page.links.external], ['Non-HTTP', @page.links.non_http]].each do |label, links| %>
+        <details class="collapse collapse-arrow mb-3 rounded-lg border border-base-300" <%= 'open' if label == 'Internal' %>>
+          <summary class="collapse-title text-lg font-semibold"><%= label %> <span class="ml-2 font-normal text-muted"><%= links.size %></span></summary>
+          <div class="collapse-content"><%= url_list(links) %></div>
+        </details>
+      <% end %>
+      <details class="collapse collapse-arrow mb-3 rounded-lg border border-base-300">
+        <summary class="collapse-title text-lg font-semibold">All HTTP links <span class="ml-2 font-normal text-muted"><%= @page.links.http.size %></span></summary>
+        <div class="collapse-content"><%= url_list(@page.links.http) %></div>
+      </details>
+      <details class="collapse collapse-arrow rounded-lg border border-base-300">
+        <summary class="collapse-title text-lg font-semibold">Original href values</summary>
+        <div class="collapse-content"><%= json_block(@page.links.raw) %></div>
+      </details>
+    </section>
 
-    <% if @page.links.all.any? %>
-      <h3>Links</h3>
-      <ul>
-        <%= links_to_li @page.links.all %>
-      </ul>
-    <% end %>
+    <section id="headings" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Headings', 'The page’s heading text grouped by level, from H1 through H6.', 'page.h1 · page.h2 · page.h3 · page.h4 · page.h5 · page.h6') %>
+      <div class="space-y-5">
+        <% (1..6).each do |level| %>
+          <% headings = @page.public_send("h#{level}") %>
+          <div class="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-4">
+            <h3 class="pt-1 font-mono text-lg font-semibold">H<%= level %></h3>
+            <% if headings.empty? %>
+              <p class="pt-1 text-lg text-muted">No H<%= level %> headings found.</p>
+            <% else %>
+              <ol class="max-h-64 list-inside list-decimal space-y-2 overflow-y-auto text-lg leading-relaxed [overflow-wrap:anywhere]">
+                <% headings.each do |heading| %><li><%= h heading %></li><% end %>
+              </ol>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </section>
 
-    <h3>Meta tags</h3>
-    <pre><code><%= @page.meta_tags %></code></pre>
+    <section id="feeds" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Feeds', 'RSS, Atom and JSON feeds declared by the page, including their title and content type.', 'page.feeds') %>
+      <% if @page.feeds.empty? %>
+        <p class="text-lg text-muted">No feeds found.</p>
+      <% else %>
+        <div class="max-h-96 space-y-6 overflow-y-auto">
+          <% @page.feeds.each do |feed| %>
+            <%= fields([['Title', feed[:title]], ['Feed URL', feed[:href], :url], ['Content type', feed[:type]]]) %>
+          <% end %>
+        </div>
+      <% end %>
+    </section>
 
-    <h3>Meta tags (shorter format)</h3>
-    <pre><code><%= @page.meta %></code></pre>
+    <section id="resources" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Page resources', 'Canonical URLs, stylesheets and the full set of link elements in the document head.', 'page.canonicals · page.stylesheets · page.head_links') %>
+      <h3 class="mb-4 font-semibold">Canonical URLs</h3>
+      <%= url_list(@page.canonicals.filter_map { |link| link[:href] }, empty: 'No canonical URLs found.') %>
+      <h3 class="mb-4 mt-7 font-semibold">Stylesheets <span class="font-normal text-muted">(<%= @page.stylesheets.size %>)</span></h3>
+      <%= url_list(@page.stylesheets.filter_map { |link| link[:href] }, empty: 'No stylesheets found.') %>
+      <details class="collapse collapse-arrow mt-6 rounded-lg border border-base-300">
+        <summary class="collapse-title text-lg font-semibold">All head link attributes (<%= @page.head_links.size %>)</summary>
+        <div class="collapse-content"><%= json_block(@page.head_links) %></div>
+      </details>
+    </section>
 
-    <h3>...or everything as a hash</h3>
-    <pre><code><%= @page.to_hash %></code></pre>
+    <section id="iframes" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Iframes', 'Resolved embed sources and original attributes. Embedded content is not loaded.', 'page.iframes · page.iframe_sources') %>
+      <% if @page.iframes.empty? %>
+        <p class="text-lg text-muted">No iframes found.</p>
+      <% else %>
+        <% @page.iframes.each_with_index do |iframe, index| %>
+          <details class="collapse collapse-arrow mb-3 rounded-lg border border-base-300" <%= 'open' if index.zero? %>>
+            <summary class="collapse-title text-lg font-semibold">Iframe <%= index + 1 %><%= " · #{h iframe[:title]}" unless iframe[:title].to_s.empty? %></summary>
+            <div class="collapse-content">
+              <%= fields([['Resolved source', @page.iframe_sources[index], :url]]) %>
+              <div class="mt-4"><%= json_block(iframe) %></div>
+            </div>
+          </details>
+        <% end %>
+      <% end %>
+    </section>
+
+    <section id="response" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('URL & HTTP response', 'URL normalization, tracking removal, base URLs and the server’s response.', 'page.url · page.untracked_url · page.links.base_url · page.response') %>
+      <%= fields([
+        ['Submitted URL', @submitted_url, :url], ['Final URL', @page.url, :url],
+        ['Request User Agent', user_agent],
+        ['Scheme', @page.scheme], ['Host', @page.host], ['Root URL', @page.root_url, :url],
+        ['Base href', @page.links.base_href], ['Resolved base URL', @page.links.base_url, :url],
+        ['Tracking parameters', @page.tracked? ? 'Detected' : 'None detected'],
+        ['Untracked URL', @page.untracked_url, :url],
+        ['HTTP status', @page.response.status], ['Content type', @page.content_type]
+      ]) %>
+      <details class="collapse collapse-arrow mt-6 rounded-lg border border-base-300">
+        <summary class="collapse-title text-lg font-semibold">Response headers</summary>
+        <div class="collapse-content"><%= json_block(@page.response.headers) %></div>
+      </details>
+    </section>
+
+    <section id="data" class="rounded-xl border border-base-300 bg-base-100 p-5 sm:p-7">
+      <%= section_heading('Raw data', 'The complete extraction as formatted JSON, plus every metadata representation and the original HTML.', 'page.to_hash · page.meta_tags · page.meta_tag · page.meta · page.to_s · page.parsed') %>
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h3 class="font-semibold">Complete data hash</h3>
+        <div class="flex gap-2">
+          <button type="button" data-copy-json hidden class="btn h-11 rounded-lg px-4 text-base">Copy JSON</button>
+          <button type="button" data-download-json hidden class="btn h-11 rounded-lg px-4 text-base">Download JSON</button>
+        </div>
+      </div>
+      <p role="status" data-export-status class="mb-3 text-lg text-muted" hidden></p>
+      <%= json_block(@page_data, id: 'json-export') %>
+      <% [['All meta tags (preserves repeated values)', @page.meta_tags], ['First value per meta tag', @page.meta_tag], ['Flattened metadata', @page.meta]].each do |label, value| %>
+        <details class="collapse collapse-arrow mt-4 rounded-lg border border-base-300">
+          <summary class="collapse-title text-lg font-semibold"><%= label %></summary>
+          <div class="collapse-content"><%= json_block(value) %></div>
+        </details>
+      <% end %>
+      <% [['Original HTML source', @page.to_s], ['Parsed HTML (Nokogiri)', @page.parsed.to_html]].each do |label, source| %>
+        <details class="collapse collapse-arrow mt-4 rounded-lg border border-base-300">
+          <summary class="collapse-title text-lg font-semibold"><%= label %></summary>
+          <div class="collapse-content"><pre class="max-h-[32rem] overflow-auto rounded-lg border border-base-300 bg-base-200 p-4 text-base leading-7"><code><%= h source %></code></pre></div>
+        </details>
+      <% end %>
+    </section>
   </div>
 </div>

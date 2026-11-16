@@ -1,7 +1,10 @@
-<div class="hero-unit">
-  <h1><%= @exception_title %></h1>
-  <h2>Ooops!!! MetaInspector couldn't scrape this page and complained about:</h2>
-  <p>
-    <%= @exception_msg %>
-  </p>
+<div class="pb-8 pt-12">
+  <a href="/" class="text-lg text-muted hover:underline underline-offset-4">← Back to the demo</a>
+  <h1 class="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">This page couldn't be inspected.</h1>
+  <p class="mt-4 max-w-2xl leading-relaxed text-muted">Check the URL and try again. Some websites block automated requests or take too long to respond.</p>
+</div>
+<%= erb :_form, layout: false %>
+<div role="alert" class="alert mt-8 block rounded-xl border border-base-300 bg-base-100 p-6">
+  <h2 class="font-mono text-lg font-semibold [overflow-wrap:anywhere]"><%= h @exception_title %></h2>
+  <p class="mt-3 text-lg leading-relaxed text-muted [overflow-wrap:anywhere]"><%= h @exception_msg %></p>
 </div>

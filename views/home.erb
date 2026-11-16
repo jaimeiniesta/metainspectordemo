@@ -1,8 +1,40 @@
-<div class="hero-unit">
-  <h1>MetaInspector <%= MetaInspector::VERSION %> demo</h1>
-  <h2>Just a little demo of the MetaInspector scraper gem</h2>
-  <form class="form-search" method="GET" action="/scrape">
-    <input type="url" name="url" class="input-medium search-query" required value="http://">
-    <button type="submit" class="btn">Scrape</button>
-  </form>
+<div class="grid items-center gap-10 pb-10 pt-12 md:grid-cols-[1.3fr_1fr] md:gap-14 md:pb-12 md:pt-16">
+  <div>
+    <p class="mb-5 text-lg font-medium text-muted">A closer look at the web</p>
+    <h1 class="max-w-2xl text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">See what a web<br class="hidden sm:block"> page is made of.</h1>
+    <p class="mt-5 max-w-lg text-lg leading-relaxed text-muted">Turn a URL into metadata, images, links and more. Try MetaInspector, right in your browser.</p>
+  </div>
+  <aside class="min-w-0 rounded-xl border border-base-300 bg-base-100 p-6 text-lg" aria-label="Ruby API example">
+    <p class="mb-5 font-medium text-muted">Simple in Ruby. Useful everywhere.</p>
+    <pre class="overflow-x-auto leading-8"><code>page = MetaInspector.new(url)
+
+page.best_title
+page.images.best
+page.links.external
+page.to_hash</code></pre>
+  </aside>
 </div>
+
+<%= erb :_form, layout: false %>
+<p class="mt-4 text-lg text-muted">Try a page: <a href="/scrape?url=https%3A%2F%2Fwww.ruby-lang.org%2Fen%2F" class="ml-2 underline underline-offset-4">ruby-lang.org</a> <span aria-hidden="true" class="mx-2">·</span> <a href="/scrape?url=https%3A%2F%2Fwww.wikipedia.org%2F" class="underline underline-offset-4">wikipedia.org</a></p>
+
+<section class="mt-16" aria-labelledby="features-title">
+  <h2 id="features-title" class="text-2xl font-semibold tracking-tight sm:text-3xl">One page. Plenty to discover.</h2>
+  <p class="mt-3 max-w-2xl leading-relaxed text-muted">Explore the data MetaInspector extracts, with readable results and the Ruby methods behind them.</p>
+  <div class="mt-8 grid gap-x-12 md:grid-cols-2">
+    <% [
+      ['Metadata & social previews', 'Titles, descriptions, authors, language, Open Graph and Twitter tags. See the best available title and image together.', 'page.best_title · page.meta'],
+      ['Images & favicons', 'Browse discovered images, compare the suggested, largest and best picks, and check image dimensions.', 'page.images · page.images.best'],
+      ['Links & URL details', 'Explore internal, external and non-HTTP links, resolved URLs, canonical URLs and tracking parameters.', 'page.links · page.untracked_url'],
+      ['Headings & page structure', 'Read every heading from H1 to H6 and inspect the structure of the page.', 'page.h1 … page.h6'],
+      ['Feeds, resources & Iframes', 'Discover RSS, Atom and JSON feeds, stylesheets, head links and iframe sources with their attributes.', 'page.feeds · page.head_links · page.iframes'],
+      ['HTTP response & JSON data', 'Inspect response status and headers, all meta tag formats, the complete data hash and HTML source.', 'page.response · page.to_hash · page.to_s']
+    ].each do |title, description, method_name| %>
+      <article class="border-t border-base-300 py-7">
+        <h3 class="text-lg font-semibold tracking-tight"><%= h title %></h3>
+        <p class="mt-2 max-w-lg leading-relaxed text-muted"><%= h description %></p>
+        <p class="mt-4 font-mono text-base text-muted"><%= h method_name %></p>
+      </article>
+    <% end %>
+  </div>
+</section>

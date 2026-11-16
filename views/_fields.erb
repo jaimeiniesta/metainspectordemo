@@ -1,0 +1,16 @@
+<dl class="divide-y divide-base-300">
+  <% rows.each do |label, value, type| %>
+    <div class="grid gap-2 py-4 first:pt-0 last:pb-0 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-6">
+      <dt class="text-lg font-medium text-muted"><%= h label %></dt>
+      <dd class="min-w-0 text-lg leading-relaxed [overflow-wrap:anywhere]">
+        <% if value.nil? || value.to_s.strip.empty? %>
+          <span class="text-muted">Not provided</span>
+        <% elsif type == :url %>
+          <%= external_link(value) %>
+        <% else %>
+          <%= h value %>
+        <% end %>
+      </dd>
+    </div>
+  <% end %>
+</dl>

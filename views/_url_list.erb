@@ -1,0 +1,9 @@
+<% if items.empty? %>
+  <p class="py-3 text-lg text-muted"><%= h empty %></p>
+<% else %>
+  <ul class="max-h-80 space-y-3 overflow-y-auto overscroll-contain pr-3 text-lg leading-relaxed">
+    <% items.each do |item| %>
+      <li class="[overflow-wrap:anywhere]"><%= external_link(item) %></li>
+    <% end %>
+  </ul>
+<% end %>
