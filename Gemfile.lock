@@ -31,7 +31,7 @@ GEM
       domain_name (~> 0.5)
     json (3.1.0)
     logger (1.7.0)
-    metainspector (5.21.0)
+    metainspector (6.0.0)
       addressable (~> 2.9.1)
       base64 (~> 0.3)
       faraday (~> 2.14, >= 2.14.3)
@@ -100,7 +100,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  metainspector
+  metainspector (~> 6.0)
   minitest (~> 6.0)
   nokogiri
   puma
