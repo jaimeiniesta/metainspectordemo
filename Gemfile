@@ -4,7 +4,7 @@ ruby '>= 3.3.0'
 gem 'sinatra'
 gem 'sinatra-contrib'
 gem 'nokogiri'
-gem 'metainspector'
+gem 'metainspector', '~> 6.0'
 gem 'rackup'
 gem 'puma'
 
